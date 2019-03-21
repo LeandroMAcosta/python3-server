@@ -8,7 +8,7 @@
 
 import optparse
 import socket
-import connection
+import connection as c
 from constants import *
 
 
@@ -21,18 +21,30 @@ class Server(object):
     def __init__(self, addr=DEFAULT_ADDR, port=DEFAULT_PORT,
                  directory=DEFAULT_DIR):
         print("Serving %s on %s:%s." % (directory, addr, port))
-        # FALTA: Crear socket del servidor, configurarlo, asignarlo
-        # a una dirección y puerto, etc.
+        # Se crea un socket.
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Asigna al socket una direccion y puerto.
+        self.s.bind((addr, port))
+        self.directory = directory
+
+        """
+        Escucha conexiones, el parametro que toma es la cantidad de peticiones
+        que puede manejar en cola nuestro socket.
+        """ 
+        self.s.listen(MAX_QUEUE)
 
     def serve(self):
         """
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
         """
-        while True:
-            pass
-            # FALTA: Aceptar una conexión al server, crear una
-            # Connection para la conexión y atenderla hasta que termine.
+        while True: 
+            # Conn y address son del cliente.
+            conn, address = self.s.accept()
+            print("Connected by {0}".format(address))
+
+            point_to_point_conn = c.Connection(conn, self.directory)
+            point_to_point_conn.handle()
 
 
 def main():
