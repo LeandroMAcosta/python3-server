@@ -8,7 +8,7 @@
 
 import optparse
 import socket
-import connection
+import connection as c
 from constants import *
 
 
