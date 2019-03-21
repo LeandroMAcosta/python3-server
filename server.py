@@ -24,7 +24,8 @@ class Server(object):
         # Se crea un socket.
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Asigna al socket una direccion y puerto.
-        self.s.bind((DEFAULT_ADDR, port))
+        self.s.bind((addr, port))
+        self.directory = directory
 
         """
         Escucha conexiones, el parametro que toma es la cantidad de peticiones
@@ -42,7 +43,7 @@ class Server(object):
             conn, address = self.s.accept()
             print("Connected by {0}".format(address))
 
-            point_to_point_conn = c.Connection(conn, DEFAULT_DIR)
+            point_to_point_conn = c.Connection(conn, self.directory)
             point_to_point_conn.handle()
 
 
