@@ -12,6 +12,7 @@ DEFAULT_PORT = 19500
 
 EOL = '\r\n'
 
+MAX_QUEUE = 1
 
 CODE_OK = 0
 BAD_EOL = 100
