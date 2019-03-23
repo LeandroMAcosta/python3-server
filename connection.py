@@ -23,15 +23,30 @@ class Connection(object):
         """
         Atiende eventos de la conexión hasta que termina.
         """
-        self.get_file_listing()
         conn = self.sock
         while True:
             data = conn.recv(1024).decode()
             if not data:
                 break 
-            # data = str(data).upper()
-            data = self.get_file_listing()
-            conn.send(data.encode())
+            data = data.split("\r\n")
+            data = list(map(lambda x: x.split(" "), data))[:-1]
+            
+            print(data)
+            
+            for command in data:
+                if command[0] == "get_file_listing":
+                    response = self.get_file_listing()
+                elif command[0] == "get_metadata":
+                    response = self.get_metadata(command[1])
+                elif command[0] == "get_slice":
+                    response = self.get_slice(command[1], int(command[2]), int(command[3]))
+                elif command[0] == "quit":
+                    conn.close()
+                    return
+                conn.send(response.encode())
+
+
+            # data = self.get_metadata("lorem5.txt")
              
         conn.close()
     
@@ -39,18 +54,23 @@ class Connection(object):
     
         path = os.getcwd() + '/' + DEFAULT_DIR
         
-        files = "0 OK\r\n"
-        for f in glob.glob(path + "**/*.*", recursive=False):
-            files = files + (os.path.basename(f) + '\r\n')
-        files = files + "\r\n"
+        files = "0 OK" + EOL
+        for f in glob.glob(path + "**/*.*"):
+            files = files + os.path.basename(f) + EOL
+        files = files + EOL
         
         return files
         
     def get_metadata(self, filename):
         path = os.getcwd() + '/' + DEFAULT_DIR + '/'
-        size = os.path.getsize(path + filename)
+
+        size = str("0 OK\r\n" + str(os.path.getsize(path + filename)) + EOL)
+
         return size
         
 
-    def get_slice(self, filename, offset_size):
-        pass
+    def get_slice(self, filename, offset, size):
+        path = os.getcwd() + '/' + DEFAULT_DIR + '/' + filename
+        file = open(path, 'r').read()[offset:offset+size]
+        response = "0 OK\r\n" + (b64encode(file.encode('utf-8'))).decode('utf-8') + EOL 
+        return response
