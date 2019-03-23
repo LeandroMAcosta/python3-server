@@ -3,9 +3,11 @@
 # Copyright 2014 Carlos Bederián
 # $Id: connection.py 455 2011-05-01 00:32:09Z carlos $
 
+import os
 import socket
 from constants import *
 from base64 import b64encode
+import glob
 
 class Connection(object):
     """
@@ -26,15 +28,21 @@ class Connection(object):
             data = conn.recv(1024).decode()
             if not data:
                 break 
-            print("Data: {0}".format(data))
+            # print("Data: {0}".format(data))
             data = str(data).upper()
-            print ("Enviando: " + str(data))
+            # print ("Enviando: " + str(data))
             conn.send(data.encode())
              
         conn.close()
     
     def get_file_listing(self):
-        pass
+
+        path = os.getcwd()
+        files = [os.path.basename(x) for x in glob.glob(path + "**/*.*", recursive=False)]
+
+        print("Archivos: ")
+        for f in files:
+            print("  " + f)
 
     def get_metadata(self, filename):
         pass
