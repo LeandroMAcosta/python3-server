@@ -15,11 +15,29 @@ class Connection(object):
     """
 
     def __init__(self, socket, directory):
-        # FALTA: Inicializar atributos de Connection
-        pass
+        self.sock = socket
 
     def handle(self):
         """
         Atiende eventos de la conexión hasta que termina.
         """
+        conn = self.sock
+        while True:
+            data = conn.recv(1024).decode()
+            if not data:
+                break 
+            print("Data: {0}".format(data))
+            data = str(data).upper()
+            print ("Enviando: " + str(data))
+            conn.send(data.encode())
+             
+        conn.close()
+    
+    def get_file_listing(self):
+        pass
+
+    def get_metadata(self, filename):
+        pass
+
+    def get_slice(self, filename, offset_size):
         pass
