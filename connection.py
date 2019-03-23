@@ -23,29 +23,34 @@ class Connection(object):
         """
         Atiende eventos de la conexión hasta que termina.
         """
+        self.get_file_listing()
         conn = self.sock
         while True:
             data = conn.recv(1024).decode()
             if not data:
                 break 
-            # print("Data: {0}".format(data))
-            data = str(data).upper()
-            # print ("Enviando: " + str(data))
+            # data = str(data).upper()
+            data = self.get_file_listing()
             conn.send(data.encode())
              
         conn.close()
     
     def get_file_listing(self):
-
-        path = os.getcwd()
-        files = [os.path.basename(x) for x in glob.glob(path + "**/*.*", recursive=False)]
-
-        print("Archivos: ")
-        for f in files:
-            print("  " + f)
-
+    
+        path = os.getcwd() + '/' + DEFAULT_DIR
+        
+        files = "0 OK\r\n"
+        for f in glob.glob(path + "**/*.*", recursive=False):
+            files = files + (os.path.basename(f) + '\r\n')
+        files = files + "\r\n"
+        
+        return files
+        
     def get_metadata(self, filename):
-        pass
+        path = os.getcwd() + '/' + DEFAULT_DIR + '/'
+        size = os.path.getsize(path + filename)
+        return size
+        
 
     def get_slice(self, filename, offset_size):
         pass
