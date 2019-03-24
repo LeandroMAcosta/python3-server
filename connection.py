@@ -9,6 +9,7 @@ from base64 import b64encode
 from os import listdir
 from os.path import isfile, join, getsize
 
+
 class Connection(object):
     """
     Conexión punto a punto entre el servidor y un cliente.
@@ -20,7 +21,7 @@ class Connection(object):
         self.s = socket
         self.d = './' + directory
         self.buffer = ''
-        self.active = True # Nos dice si el cliente termino la conexión.
+        self.active = True  # Nos dice si el cliente termino la conexión.
 
     def _build_message(self, code, data=None):
         """
@@ -32,7 +33,7 @@ class Connection(object):
         message = str(code) + ' ' + error_messages[code] + EOL
         if data is not None:
             message += data
-        message += EOL # Completa el mensaje con un fin de línea.
+        message += EOL  # Completa el mensaje con un fin de línea.
         return message
 
     def send(self, message):
@@ -107,7 +108,7 @@ class Connection(object):
                 return command.strip().split()
 
     def _read_buffer(self):
-        while not EOL in self.buffer and self.active:
+        while EOL not in self.buffer and self.active:
             self.buffer = self.s.recv(4096).decode("ascii")
 
             if len(self.buffer) == 0:
@@ -123,4 +124,5 @@ class Connection(object):
         while self.active:
             # Normaliza, descodifica mensajes.
             command = self._normalize_command(self._read_buffer())
-            if command is not None: self.parser_command(*command)
+            if command is not None:
+                self.parser_command(*command)
