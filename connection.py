@@ -32,7 +32,7 @@ class Connection(object):
 
         message = str(code) + ' ' + error_messages[code] + EOL
         if data is not None:
-            message += data
+            message += str(data)
         message += EOL  # Completa el mensaje con un fin de línea.
         return message
 
@@ -47,12 +47,17 @@ class Connection(object):
         self.send(message)
 
     def get_slice(self, filename, offset, size):
-        message = self._build_message(FILE_NOT_FOUND)
+        path = join(self.d, filename)
+        offset, size = int(offset), int(size)
+        data = open(path, 'r').read()[offset:offset+size]
+        data = b64encode(data.encode('ascii'))
+        message = self._build_message(CODE_OK, data)
+
         self.send(message)
 
     def get_metadata(self, filename):
         try:
-            size = getsize(self.d + '/' + filename)
+            size = getsize(join(self.d, filename))
             message = self._build_message(CODE_OK, str(size))
         except Exception:
             message = self._build_message(FILE_NOT_FOUND)
