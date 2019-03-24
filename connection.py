@@ -47,12 +47,16 @@ class Connection(object):
         self.send(message)
 
     def get_slice(self, filename, offset, size):
+        try:
+            offset, size = int(offset), int(size)
+        except ValueError:
+            raise
+
         path = join(self.d, filename)
-        offset, size = int(offset), int(size)
         data = open(path, 'r').read()[offset:offset+size]
         data = b64encode(data.encode('ascii'))
-        message = self._build_message(CODE_OK, data)
 
+        message = self._build_message(CODE_OK, data)
         self.send(message)
 
     def get_metadata(self, filename):
@@ -86,7 +90,7 @@ class Connection(object):
             else:
                 message = self._build_message(INVALID_COMMAND)
                 self.send(message)
-        except TypeError:
+        except (TypeError, ValueError):
             message = self._build_message(INVALID_ARGUMENTS)
             self.send(message)
 
