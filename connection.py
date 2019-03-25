@@ -33,7 +33,7 @@ class Connection(object):
         message = str(code) + ' ' + error_messages[code] + EOL
         if data is not None:
             message += str(data)
-        message += EOL  # Completa el mensaje con un fin de línea.
+            message += EOL  # Completa el mensaje con un fin de línea.
         return message
 
     def send(self, message):
@@ -53,6 +53,7 @@ class Connection(object):
             raise
 
         path = join(self.d, filename)
+
         data = open(path, 'r').read()[offset:offset+size]
         data = b64encode(data.encode('ascii'))
 
