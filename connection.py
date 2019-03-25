@@ -3,11 +3,12 @@
 # Copyright 2014 Carlos Bederián
 # $Id: connection.py 455 2011-05-01 00:32:09Z carlos $
 
-import os
 import socket
 from constants import *
 from base64 import b64encode
-import glob
+from os import listdir
+from os.path import isfile, join, getsize
+
 
 class Connection(object):
     """
@@ -17,60 +18,121 @@ class Connection(object):
     """
 
     def __init__(self, socket, directory):
-        self.sock = socket
+        self.s = socket
+        self.d = './' + directory
+        self.buffer = ''
+        self.active = True  # Nos dice si el cliente termino la conexión.
 
-    def handle(self):
+    def _build_message(self, code, data=None):
         """
-        Atiende eventos de la conexión hasta que termina.
+        Estos mensajes estan construidos por el codigo de respuesta,
+        seguida de un espacio, seguido de un mensaje de error y
+        datos del server si es que los hay.
         """
-        conn = self.sock
-        while True:
-            data = conn.recv(1024).decode()
-            if not data:
-                break 
-            data = data.split("\r\n")
-            data = list(map(lambda x: x.split(" "), data))[:-1]
-            
-            print(data)
-            
-            for command in data:
-                if command[0] == "get_file_listing":
-                    response = self.get_file_listing()
-                elif command[0] == "get_metadata":
-                    response = self.get_metadata(command[1])
-                elif command[0] == "get_slice":
-                    response = self.get_slice(command[1], int(command[2]), int(command[3]))
-                elif command[0] == "quit":
-                    conn.close()
-                    return
-                conn.send(response.encode())
 
+        message = str(code) + ' ' + error_messages[code] + EOL
+        if data is not None:
+            message += str(data)
+            message += EOL  # Completa el mensaje con un fin de línea.
+        return message
 
-            # data = self.get_metadata("lorem5.txt")
-             
-        conn.close()
-    
+    def send(self, message):
+        # Envia el mensaje al cliente.
+        # FALTA: Hacerlo bien.
+        self.s.send(message.encode('ascii'))
+
     def get_file_listing(self):
-    
-        path = os.getcwd() + '/' + DEFAULT_DIR
-        
-        files = "0 OK" + EOL
-        for f in glob.glob(path + "**/*.*"):
-            files = files + os.path.basename(f) + EOL
-        files = files + EOL
-        
-        return files
-        
-    def get_metadata(self, filename):
-        path = os.getcwd() + '/' + DEFAULT_DIR + '/'
-
-        size = str("0 OK\r\n" + str(os.path.getsize(path + filename)) + EOL)
-
-        return size
-        
+        files = [f for f in listdir(self.d) if isfile(join(self.d, f))]
+        message = self._build_message(CODE_OK, EOL.join(files) + EOL)
+        self.send(message)
 
     def get_slice(self, filename, offset, size):
-        path = os.getcwd() + '/' + DEFAULT_DIR + '/' + filename
-        file = open(path, 'r').read()[offset:offset+size]
-        response = "0 OK\r\n" + (b64encode(file.encode('utf-8'))).decode('utf-8') + EOL 
-        return response
+        try:
+            offset, size = int(offset), int(size)
+        except ValueError:
+            raise
+
+        path = join(self.d, filename)
+
+        data = open(path, 'r').read()[offset:offset+size]
+        data = b64encode(data.encode('ascii'))
+
+        message = self._build_message(CODE_OK, data)
+        self.send(message)
+
+    def get_metadata(self, filename):
+        try:
+            size = getsize(join(self.d, filename))
+            message = self._build_message(CODE_OK, str(size))
+        except Exception:
+            message = self._build_message(FILE_NOT_FOUND)
+        self.send(message)
+
+    def quit(self):
+        message = self._build_message(CODE_OK)
+        self.send(message)
+        self.active = False
+        self.s.close()
+
+    def parser_command(self, command, args=None):
+        # Llama al metodo correspondiente al comando solicitado
+
+        print("Request: " + command)
+
+        try:
+            if command in ['quit', 'get_file_listing'] and args:
+                raise TypeError
+            elif command == 'get_file_listing':
+                self.get_file_listing()
+            elif command == 'get_metadata':
+                self.get_metadata(*args)
+            elif command == 'get_slice':
+                self.get_slice(*args)
+            elif command == 'quit':
+                self.quit()
+            else:
+                message = self._build_message(INVALID_COMMAND)
+                self.send(message)
+        except (TypeError, ValueError):
+            message = self._build_message(INVALID_ARGUMENTS)
+            self.send(message)
+
+    def _normalize_command(self, command):
+        '''
+        Ejemplo:
+        Input 'command arg arg\r\n'
+        Output [command, [arg, arg]]
+
+        Donde el primer elemento de la lista es el comando y el resto son
+        los argumentos si es que los hay.
+
+        Si no puede normalizar, devolver 100 y desconectar el cliente.
+        '''
+        if command == "" or '\n' in command:
+            message = self._build_message(BAD_EOL)
+            self.send(message)
+        else:
+            try:
+                command, args = command.strip().split(' ', 1) 
+                return [command, args.split(' ')]
+            except ValueError:
+                return command.strip().split()
+
+    def _read_buffer(self):
+        while EOL not in self.buffer and self.active:
+            self.buffer = self.s.recv(4096).decode("ascii")
+            if len(self.buffer) == 0:
+                self.active = False
+        if EOL in self.buffer:
+            response, self.buffer = self.buffer.split(EOL, 1)
+            return response
+        else:
+            return ""
+
+    def handle(self):
+        # Atiende eventos de la conexión hasta que termina.
+        while self.active:
+            # Normaliza, descodifica mensajes.
+            command = self._normalize_command(self._read_buffer())
+            if command is not None:
+                self.parser_command(*command)
