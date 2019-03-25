@@ -54,8 +54,8 @@ class Connection(object):
 
         path = join(self.d, filename)
 
-        data = open(path, 'r').read()[offset:offset+size]
-        data = b64encode(data.encode('ascii'))
+        data = open(join(self.d, filename), 'r').read()[offset:offset+size]
+        data = (b64encode(data.encode('ascii'))).decode('ascii')
 
         message = self._build_message(CODE_OK, data)
         self.send(message)
@@ -106,22 +106,24 @@ class Connection(object):
         Donde el primer elemento de la lista es el comando y el resto son
         los argumentos si es que los hay.
 
-        Si no puede normalizar, devolver 100 y desconectar el cliente.
+        Si no puede normalizar, devolver 100.
         '''
         if command == "" or '\n' in command:
             message = self._build_message(BAD_EOL)
             self.send(message)
         else:
             try:
-                command, args = command.strip().split(' ', 1) 
+                command, args = command.split(' ', 1) 
                 return [command, args.split(' ')]
             except ValueError:
-                return command.strip().split()
+                return command.split()
 
     def _read_buffer(self):
         while EOL not in self.buffer and self.active:
-            self.buffer = self.s.recv(4096).decode("ascii")
-            if len(self.buffer) == 0:
+            data = self.s.recv(4096).decode("ascii")
+            self.buffer += data
+
+            if len(data) == 0:
                 self.active = False
         if EOL in self.buffer:
             response, self.buffer = self.buffer.split(EOL, 1)
