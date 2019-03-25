@@ -113,7 +113,7 @@ class Connection(object):
             self.send(message)
         else:
             try:
-                command, args = command.strip().split(' ', 1) 
+                command, args = command.strip().split(' ', 1)
                 return [command, args.split(' ')]
             except ValueError:
                 return command.strip().split()
