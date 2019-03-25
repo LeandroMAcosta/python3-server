@@ -80,7 +80,9 @@ class Connection(object):
         print("Request: " + command)
 
         try:
-            if command == 'get_file_listing':
+            if command in ['quit', 'get_file_listing'] and args:
+                raise TypeError
+            elif command == 'get_file_listing':
                 self.get_file_listing()
             elif command == 'get_metadata':
                 self.get_metadata(*args)
@@ -109,7 +111,6 @@ class Connection(object):
         if command == "" or '\n' in command:
             message = self._build_message(BAD_EOL)
             self.send(message)
-            self.s.close()
         else:
             try:
                 command, args = command.strip().split(' ', 1) 
@@ -120,7 +121,6 @@ class Connection(object):
     def _read_buffer(self):
         while EOL not in self.buffer and self.active:
             self.buffer = self.s.recv(4096).decode("ascii")
-
             if len(self.buffer) == 0:
                 self.active = False
         if EOL in self.buffer:
