@@ -23,14 +23,16 @@ class Server(object):
         print("Serving %s on %s:%s." % (directory, addr, port))
         # Se crea un socket.
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.addr = addr
+        self.port = port
+        self.directory = directory
         # Asigna al socket una direccion y puerto.
         self.s.bind((addr, port))
-        self.directory = directory
 
         """
         Escucha conexiones, el parametro que toma es la cantidad de peticiones
         que puede manejar en cola nuestro socket.
-        """ 
+        """
         self.s.listen(MAX_QUEUE)
 
     def serve(self):
@@ -38,7 +40,7 @@ class Server(object):
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
         """
-        while True: 
+        while True:
             # Conn y address son del cliente.
             conn, address = self.s.accept()
             print("Connected by {0}".format(address))
