@@ -2,12 +2,17 @@
 # Indice
 1. ¿Cómo funciona un servidor?
 2. Proyecto
+    
     2.1 Funciones
+    
     2.2 Excepciones
+    
     2.3 Errores
 
 3. Servidor Multicliente
+    
     2.2 Selectors
+    
     2.3 Threads
 
 4. Bibliografía
