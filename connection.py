@@ -53,9 +53,10 @@ class Connection(object):
             raise
 
         path = join(self.d, filename)
-
-        data = open(join(self.d, filename), 'r').read()[offset:offset+size]
-        data = (b64encode(data.encode('ascii'))).decode('ascii')
+        file = open(join(self.d, filename), 'rb')
+        file.seek(offset)
+        data = file.read(size)
+        data = b64encode(data).decode('ascii')
 
         message = self._build_message(CODE_OK, data)
         self.send(message)
@@ -135,6 +136,9 @@ class Connection(object):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
             # Normaliza, descodifica mensajes.
-            command = self._normalize_command(self._read_buffer())
-            if command is not None:
-                self.parser_command(*command)
+            try:
+                command = self._normalize_command(self._read_buffer())
+                if command is not None:
+                    self.parser_command(*command)
+            except:
+                pass
