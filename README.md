@@ -15,18 +15,16 @@
 5. Integrantes del grupo
 
 ## ¿Cómo funciona un servidor?
+------------------------------
 
 ![Servido Cliente](https://files.realpython.com/media/sockets-tcp-flow.1da426797e37.jpg)
 
 Veamos las funciones que llama el servidor para crear un **listening** socket:
-    
-    * socket()
-    
-    * bind()
-    
-    * listen()
-    
-    * accept()
+
+    socket()
+    bind()
+    listen()
+    accept()
 
 El socket espera a que los clientes se conecten, cuando esto sucede el servidor hace
 una llamada a la función `accept()` para poder completar la conección.
@@ -38,15 +36,30 @@ en la network y vice-versa.
 
 Para comunicarse entre ellos tanto el servido como el cliente utilizan las funciones.
     
-    * send()
-    
-    * recv()
+    send()
+    recv()
 
 Por último una vez que el cliente no necesita comunicarse más con el servidor , envia 
 un mensaje para indicarle que no va enviar más mensajes y cierra su respectivo 
 socket usand `close()`.
 
 ## Proyecto
+-----------
+### Funciones
+
+#### Handle(self):
+
+![handle](diagrams/handle.png)
+#### Normalize_command(self, command):
+
+![handle](diagrams/normalizeCmd.png)
+#### Parser_command(self, command, args=None):
+
+![handle](diagrams/parser.png)
+#### Read_buffer(self):
+
+![handle](diagrams/readBuffer.png)
+
 -------------------------------
 Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
 > Las aplicaciones son responsables de verificar que toda la información haya sido enviada ; si sólo se envió una oarta , la aplicación tiene que enviar la información que resta.
@@ -97,5 +110,5 @@ para eventos en los que estamos interesados. La información es recivida cuando 
 
 ## Integrantes del Grupo
 - Gonzalo Gigena
-- Leanro Acosta
+- Leandro Acosta
 - Joaquin de Francesca
