@@ -18,34 +18,34 @@
 
 ![Servido Cliente](https://files.realpython.com/media/sockets-tcp-flow.1da426797e37.jpg)
 
-Veamos las funciones que llama el servidor para crear un listening socket:
-    - socket()
-    - bind()
-    - listen()
-    - accept()
+Veamos las funciones que llama el servidor para crear un **listening** socket:
+    * socket()
+    * bind()
+    * listen()
+    * accept()
 
 El socket espera a que los clientes se conecten, cuando esto sucede el servidor hace
-una llamada a la función accept() para poder completar la conección.
+una llamada a la función `accept()` para poder completar la conección.
 
-Por otra parte el cliente llama a la función connect() para poder establecer
+Por otra parte el cliente llama a la función `connect()` para poder establecer
 la conección con el servidor e iniciar lo que se conoce como *three-way handshake*, que no
 es nada más que una forma de asegurarse que el cliente se pueda comunicar con el servidor
 en la network y vice-versa.
 
 Para comunicarse entre ellos tanto el servido como el cliente utilizan las funciones.
-    - send()
-    - recv()
+    * send()
+    * recv()
 
 Por último una vez que el cliente no necesita comunicarse más con el servidor , envia 
 un mensaje para indicarle que no va enviar más mensajes y cierra su respectivo 
-socket usand close().
+socket usand `close()`.
 
 ## Proyecto
 -------------------------------
-Cuando el cliente o el servidor usan la funcion send() pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
+Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
 > Las aplicaciones son responsables de verificar que toda la información haya sido enviada ; si sólo se envió una oarta , la aplicación tiene que enviar la información que resta.
 
-Podemos evitar este inconveniente utilizando la función sendall()
+Podemos evitar este inconveniente utilizando la función `sendall()`
 > A diferencia de send(), este metodo continua enviando la información hasta que se envia todo u ocurre un error. En caso de exito se devuelve cero.
 ------------------------------
 
@@ -56,8 +56,8 @@ Volviendo a como funciona un servidor cabe destacar que el método descripto só
 
 Va a ser una breve descripción de como funciona porque no es el método que optamos nosotros para realizar un servidor multicliente. 
 
-Si usamos la systemcall select() podemos fijarnos que socket's tiene la E/S para leer/escribir, dependiendo del caso. Para ello se puede utilizar la librería *Selectors*. 
-python
+Si usamos la **systemcall** `select()` podemos fijarnos que socket's tiene la E/S para leer/escribir, dependiendo del caso. Para ello se puede utilizar la librería *Selectors*. 
+``` python
     import selectors
     selector = selectors.DefaultSelector()
     
@@ -69,12 +69,13 @@ python
     
     socket.setblocking(False)
     sel.register(socket, selectors.EVENT_READ, data=None)
+```
 La mayor diferencia con el servidor que sólo puede manejar un cliente a la vez es que tenemos es la llamada a la función 
 socket.setblocking(False) que sirve para configurar el socken en un modo *non-blocking*.
 > Una función o método que temporalmente suspende tu aplicacion se llama *blocking call*, por ejemplo accept() o send() no retornan inmediatamente.Las "Blocking calls" tienen que esperar a systemcall's para terminar antes que devuelvan un valor.
 
-Sel.register() como lo dice el nombre registra el socket para que sea monitoreado con sel.select() para eventos en los que
-estamos interesados. La información es recivida cuando la llamada a sel.select() termina.
+Sel.register() como lo dice el nombre registra el socket para que sea monitoreado con `sel.select()` 
+para eventos en los que estamos interesados. La información es recivida cuando la llamada a `sel.select()` termina.
 
 ### Threads   
 
