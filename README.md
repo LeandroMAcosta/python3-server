@@ -19,9 +19,13 @@
 ![Servido Cliente](https://files.realpython.com/media/sockets-tcp-flow.1da426797e37.jpg)
 
 Veamos las funciones que llama el servidor para crear un **listening** socket:
+    
     * socket()
+    
     * bind()
+    
     * listen()
+    
     * accept()
 
 El socket espera a que los clientes se conecten, cuando esto sucede el servidor hace
@@ -33,7 +37,9 @@ es nada más que una forma de asegurarse que el cliente se pueda comunicar con e
 en la network y vice-versa.
 
 Para comunicarse entre ellos tanto el servido como el cliente utilizan las funciones.
+    
     * send()
+    
     * recv()
 
 Por último una vez que el cliente no necesita comunicarse más con el servidor , envia 
