@@ -32,10 +32,10 @@ Veamos las funciones que llama el servidor para crear un **listening** socket:
     accept()
 
 El socket espera a que los clientes se conecten, cuando esto sucede el servidor hace
-una llamada a la función `accept()` para poder completar la conección.
+una llamada a la función `accept()` para poder completar la conexión.
 
 Por otra parte el cliente llama a la función `connect()` para poder establecer
-la conección con el servidor e iniciar lo que se conoce como *three-way handshake*, que no
+la conexión con el servidor e iniciar lo que se conoce como *three-way handshake*, que no
 es nada más que una forma de asegurarse que el cliente se pueda comunicar con el servidor
 en la network y vice-versa.
 
