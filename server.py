@@ -47,6 +47,7 @@ class Server(object):
 
             point_to_point_conn = c.Connection(conn, self.directory)
             point_to_point_conn.handle()
+            point_to_point_conn.s.close()
 
 
 def main():
