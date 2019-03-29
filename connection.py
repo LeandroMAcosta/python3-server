@@ -158,13 +158,13 @@ class Connection(object):
                 command = self._read_buffer()
                 if len(command) != 0: 
                     status = self.parser_command(command)
+                    print(status)
+                    # Desconectamos si ocurrio un error fatal.
                     if fatal_status(status):
-                        message = self._build_message(status)
-                        self.send(message)
                         self.active = False
-                        self.data = False
-                    else:
-                        message = self._build_message(status)
-                        self.send(message)
+                    # Construimos un mensaje.
+                    message = self._build_message(status)
+                    # Enviamos el mensaje al cliente.
+                    self.send(message)
             except:
                 pass
