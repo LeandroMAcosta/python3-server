@@ -61,7 +61,7 @@ class Connection(object):
             raise
 
         path = join(self.d, filename)
-        file = open(join(self.d, filename), 'rb')
+        file = open(path, 'rb')
         file.seek(offset)
         data = file.read(size)
         data = b64encode(data).decode('ascii')
@@ -100,11 +100,8 @@ class Connection(object):
         Donde el primer elemento de la lista es el comando y el resto son
         los argumentos si es que los hay.
         '''
-        try:
-            command, args = command.split(' ', 1)
-            return command, args.split(' ')
-        except ValueError:
-            return command, None
+        command = command.split(' ')
+        return command[0], command[1:]
 
     def parser_command(self, command):
         '''
@@ -117,23 +114,21 @@ class Connection(object):
         '''
         if '\n' in command:
             return BAD_EOL
-        else:
-            # Normalizamos el comando.
-            command, args = self._normalize_command(command)
+
+        # Normalizamos el comando.
+        command, args = self._normalize_command(command)
 
         print("Request: " + command)
 
         try:
-            if command in ['quit', 'get_file_listing'] and args:
-                raise TypeError
-            elif command == 'get_file_listing':
-                return self.get_file_listing()
+            if command == 'get_file_listing':
+                return self.get_file_listing(*args)
             elif command == 'get_metadata':
                 return self.get_metadata(*args)
             elif command == 'get_slice':
                 return self.get_slice(*args)
             elif command == 'quit':
-                return self.quit()
+                return self.quit(*args)
             else:
                 return INVALID_COMMAND
         except (TypeError, ValueError):
@@ -141,10 +136,17 @@ class Connection(object):
 
     def _read_buffer(self):
         while EOL not in self.buffer and self.active:
-            data = self.s.recv(BUFSIZE).decode("ascii")
-            self.buffer += data
+            try:
+                data = self.s.recv(BUFSIZE)
+            except ConnectionResetError:
+                self.active = False
+                break
+
             if len(data) == 0:
                 self.active = False
+                break
+            data = data.decode("ascii")
+            self.buffer += data
         if EOL in self.buffer:
             response, self.buffer = self.buffer.split(EOL, 1)
             return response
@@ -154,17 +156,13 @@ class Connection(object):
     def handle(self):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
-            try:
-                command = self._read_buffer()
-                if len(command) != 0: 
-                    status = self.parser_command(command)
-                    print(status)
-                    # Desconectamos si ocurrio un error fatal.
-                    if fatal_status(status):
-                        self.active = False
-                    # Construimos un mensaje.
-                    message = self._build_message(status)
-                    # Enviamos el mensaje al cliente.
-                    self.send(message)
-            except:
-                pass
+            command = self._read_buffer()
+            if len(command) != 0: 
+                status = self.parser_command(command)
+                # Desconectamos si ocurrio un error fatal.
+                if fatal_status(status):
+                    self.active = False
+                # Construimos un mensaje.
+                message = self._build_message(status)
+                # Enviamos el mensaje al cliente.
+                self.send(message)
