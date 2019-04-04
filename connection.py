@@ -29,6 +29,9 @@ class Connection(object):
         self.data = ''
         self.s.send(message.encode('ascii'))
 
+    def _valid_filename(self, filename):
+        return set(filename) <= VALID_CHARS and isfile(join(self.d, filename))
+
     def _build_message(self, status):
         """
         Estos mensajes estan construidos por el codigo de respuesta,
@@ -58,6 +61,7 @@ class Connection(object):
             invalidos y parser_command tiene que manejalo.
             '''
             raise
+
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
         
@@ -70,14 +74,6 @@ class Connection(object):
         return CODE_OK
 
     def get_metadata(self, filename):
-        '''
-        FALTA: Chequear que el filename sea valido, usando VALID_CHARS de los
-        profes.
-
-        Onda hacer una funcion que chequea eso y de paso que exista, de lo
-        contrario tiramos un FILE_NOT_FOUND y nos evitamos un try feo.
-        '''
-
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
 
@@ -139,20 +135,16 @@ class Connection(object):
             except ConnectionResetError:
                 self.active = False
                 break
-
             if len(data) == 0:
                 self.active = False
-                break
-            data = data.decode("ascii")
-            self.buffer += data
+            else:
+                data = data.decode("ascii")
+                self.buffer += data
         if EOL in self.buffer:
             response, self.buffer = self.buffer.split(EOL, 1)
             return response
         else:
             return ''
-    
-    def _valid_filename(self, filename):
-        return set(filename) <= VALID_CHARS and isfile(join(self.d, filename))
         
     def handle(self):
         # Atiende eventos de la conexión hasta que termina.
