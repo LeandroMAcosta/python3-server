@@ -9,7 +9,6 @@ from base64 import b64encode
 from os import listdir
 from os.path import isfile, join, getsize
 
-
 class Connection(object):
     """
     Conexión punto a punto entre el servidor y un cliente.
@@ -59,7 +58,9 @@ class Connection(object):
             invalidos y parser_command tiene que manejalo.
             '''
             raise
-
+        if not self._valid_filename(filename):
+            return FILE_NOT_FOUND
+        
         path = join(self.d, filename)
         file = open(path, 'rb')
         file.seek(offset)
@@ -76,16 +77,13 @@ class Connection(object):
         Onda hacer una funcion que chequea eso y de paso que exista, de lo
         contrario tiramos un FILE_NOT_FOUND y nos evitamos un try feo.
         '''
-        try:
-            '''
-            Obtenemos el tamaño del archivo en el directorio self.d y lo
-            guardamos en self.data.
-            '''
-            size = getsize(join(self.d, filename))
-            self.data = str(size)
-            return CODE_OK
-        except Exception:
+
+        if not self._valid_filename(filename):
             return FILE_NOT_FOUND
+
+        size = getsize(join(self.d, filename))
+        self.data = str(size)
+        return CODE_OK
 
     def quit(self):
         self.active = False
@@ -152,7 +150,10 @@ class Connection(object):
             return response
         else:
             return ''
-
+    
+    def _valid_filename(self, filename):
+        return set(filename) <= VALID_CHARS and isfile(join(self.d, filename))
+        
     def handle(self):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
