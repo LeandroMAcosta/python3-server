@@ -10,7 +10,7 @@ import optparse
 import socket
 import connection as c
 from constants import *
-
+import threading
 
 class Server(object):
     """
@@ -40,13 +40,19 @@ class Server(object):
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
         """
+        lock = threading.Lock()               
         while True:
             # Conn y address son del cliente.
             conn, address = self.s.accept()
             print("Connected by {0}".format(address))
 
-            point_to_point_conn = c.Connection(conn, self.directory)
-            point_to_point_conn.handle()
+            try:
+                thread = threading.Thread() 
+                thread.start()
+                point_to_point_conn = c.Connection(conn, self.directory, lock)
+                point_to_point_conn.handle()
+            except : 
+                print("Error al crear un hilo")
             point_to_point_conn.s.close()
 
 
