@@ -28,7 +28,7 @@ class Server(object):
         self.directory = directory
         # Asigna al socket una direccion y puerto.
         self.s.bind((addr, port))
-
+        self.lock = threading.Lock() 
         """
         Escucha conexiones, el parametro que toma es la cantidad de peticiones
         que puede manejar en cola nuestro socket.
@@ -39,8 +39,7 @@ class Server(object):
         """
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
-        """
-        lock = threading.Lock()               
+        """              
         while True:
             # Conn y address son del cliente.
             conn, address = self.s.accept()
@@ -49,11 +48,10 @@ class Server(object):
             try:
                 thread = threading.Thread() 
                 thread.start()
-                point_to_point_conn = c.Connection(conn, self.directory, lock)
+                point_to_point_conn = c.Connection(conn, self.directory, self.lock)
                 point_to_point_conn.handle()
             except : 
                 print("Error al crear un hilo")
-            point_to_point_conn.s.close()
 
 
 def main():

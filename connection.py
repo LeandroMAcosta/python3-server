@@ -164,3 +164,5 @@ class Connection(object):
                 message = self._build_message(status)
                 # Enviamos el mensaje al cliente.
                 self.send(message)
+
+        self.s.close()
