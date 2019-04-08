@@ -17,22 +17,19 @@ class Connection(object):
     que termina la conexión.
     """
 
-    def __init__(self, socket, directory,lock,lock_print):
+    def __init__(self, socket, directory,lock_print):
         self.s = socket            # Socket del cliente.
         self.d = './' + directory  # Directiorio actual.
         self.buffer = ''           # Cola de comandos. 
         self.active = True         # Nos dice si el cliente termino la conexión.
         self.data = ''             # Datos que se van a enviar al cliente.
-        self.lock = lock           #lock para poder coordinar enviar y recibir mensajes
         self.lock_print = lock_print
 
     def send(self, message):
         # Envia el mensaje al cliente.
         # FALTA: Hacerlo bien.
         self.data = ''
-        self.lock.acquire()
         self.s.send(message.encode('ascii'))
-        self.lock.release()
 
     def _valid_filename(self, filename):
         return set(filename) <= VALID_CHARS and isfile(join(self.d, filename))
@@ -138,9 +135,7 @@ class Connection(object):
     def _read_buffer(self):
         while EOL not in self.buffer and self.active:
             try:
-                self.lock.acquire()
                 data = self.s.recv(BUFSIZE)
-                self.lock.release()
             except ConnectionResetError:
                 self.active = False
                 break
