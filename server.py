@@ -26,7 +26,8 @@ class Server(object):
         self.addr = addr
         self.port = port
         self.directory = directory
-        self.lock = threading.Lock() 
+        self.lock_sr = threading.Lock()
+        self.lock_print = threading.Lock()          
         # Asigna al socket una direccion y puerto.
         self.s.bind((addr, port))
         """
@@ -39,11 +40,11 @@ class Server(object):
 
         while True:
             conn,addr = self.s.accept() 
-            self.lock.acquire()
+            self.lock_print.acquire()
             print(threading.current_thread().name + " Connected by {0}".format(addr))
-            self.lock.release()
+            self.lock_print.release()
 
-            point_to_point_conn = c.Connection(conn, self.directory, self.lock)
+            point_to_point_conn = c.Connection(conn, self.directory, self.lock_sr,self.lock_print)
             point_to_point_conn.handle()
 
 

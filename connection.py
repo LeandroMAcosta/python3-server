@@ -17,13 +17,14 @@ class Connection(object):
     que termina la conexión.
     """
 
-    def __init__(self, socket, directory,lock):
+    def __init__(self, socket, directory,lock,lock_print):
         self.s = socket            # Socket del cliente.
         self.d = './' + directory  # Directiorio actual.
         self.buffer = ''           # Cola de comandos. 
         self.active = True         # Nos dice si el cliente termino la conexión.
         self.data = ''             # Datos que se van a enviar al cliente.
         self.lock = lock           #lock para poder coordinar enviar y recibir mensajes
+        self.lock_print = lock_print
 
     def send(self, message):
         # Envia el mensaje al cliente.
@@ -116,9 +117,9 @@ class Connection(object):
         # Normalizamos el comando.
         command, args = self._normalize_command(command)
         
-        self.lock.acquire()
+        self.lock_print.acquire()
         print(threading.current_thread().name + " Request: " + command)
-        self.lock.release()
+        self.lock_print.release()
 
         try:
             if command == 'get_file_listing':
