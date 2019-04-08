@@ -26,32 +26,36 @@ class Server(object):
         self.addr = addr
         self.port = port
         self.directory = directory
+        self.lock = threading.Lock() 
         # Asigna al socket una direccion y puerto.
         self.s.bind((addr, port))
-        self.lock = threading.Lock() 
         """
         Escucha conexiones, el parametro que toma es la cantidad de peticiones
         que puede manejar en cola nuestro socket.
         """
         self.s.listen(MAX_QUEUE)
 
+    def multiclient(self):
+
+        while True:
+            conn,addr = self.s.accept() 
+            self.lock.acquire()
+            print(threading.current_thread().name + " Connected by {0}".format(addr))
+            self.lock.release()
+
+            point_to_point_conn = c.Connection(conn, self.directory, self.lock)
+            point_to_point_conn.handle()
+
+
     def serve(self):
         """
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
-        """              
-        while True:
-            # Conn y address son del cliente.
-            conn, address = self.s.accept()
-            print("Connected by {0}".format(address))
+        """     
+        for x in range(MAX_QUEUE):          
+            thread = threading.Thread(target= self.multiclient)
+            thread.start()
 
-            try:
-                thread = threading.Thread() 
-                thread.start()
-                point_to_point_conn = c.Connection(conn, self.directory, self.lock)
-                point_to_point_conn.handle()
-            except : 
-                print("Error al crear un hilo")
 
 
 def main():

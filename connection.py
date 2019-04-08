@@ -8,6 +8,7 @@ from constants import *
 from base64 import b64encode
 from os import listdir
 from os.path import isfile, join, getsize
+import threading
 
 class Connection(object):
     """
@@ -22,7 +23,7 @@ class Connection(object):
         self.buffer = ''           # Cola de comandos. 
         self.active = True         # Nos dice si el cliente termino la conexión.
         self.data = ''             # Datos que se van a enviar al cliente.
-        self.lock = lock           #lock para poder coordinar enviar y recivir mensajes
+        self.lock = lock           #lock para poder coordinar enviar y recibir mensajes
 
     def send(self, message):
         # Envia el mensaje al cliente.
@@ -114,8 +115,10 @@ class Connection(object):
 
         # Normalizamos el comando.
         command, args = self._normalize_command(command)
-
-        print("Request: " + command)
+        
+        self.lock.acquire()
+        print(threading.current_thread().name + " Request: " + command)
+        self.lock.release()
 
         try:
             if command == 'get_file_listing':
