@@ -36,10 +36,8 @@ class Server(object):
         """
         self.s.listen(MAX_QUEUE)
 
-    def multiclient(self):
+    def multiclient(self,conn,addr):
 
-        while True:
-            conn, addr = self.s.accept()
             self.lock_print.acquire()
             print("%s Connected by %s" % (threading.current_thread().name,
                                           addr))
@@ -58,8 +56,11 @@ class Server(object):
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
         """
-        for x in range(MAX_QUEUE):
-            thread = threading.Thread(target=self.multiclient)
+        while True:
+            conn, addr = self.s.accept()
+            thread = threading.Thread(target=self.multiclient,args =(conn,addr))
+            # .daemon hace que el thread se muera una vez que termina su tarea
+            thread.daemon = True
             thread.start()
 
 
