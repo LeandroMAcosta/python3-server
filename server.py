@@ -41,8 +41,10 @@ class Server(object):
         while True:
             conn, addr = self.s.accept()
             self.lock_print.acquire()
-            print("%s Connected by %s" % (threading.current_thread().name,
-                                          addr))
+            print("%s Connected by %s" % (
+                threading.current_thread().name,
+                addr)
+            )
 
             self.lock_print.release()
 
@@ -52,6 +54,7 @@ class Server(object):
                 self.lock_print
             )
             point_to_point_conn.handle()
+            point_to_point_conn.s.close()
 
     def serve(self):
         """
