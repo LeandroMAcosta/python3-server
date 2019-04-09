@@ -12,6 +12,7 @@ import connection as c
 from constants import *
 import threading
 
+
 class Server(object):
     """
     El servidor, que crea y atiende el socket en la dirección y puerto
@@ -26,7 +27,7 @@ class Server(object):
         self.addr = addr
         self.port = port
         self.directory = directory
-        self.lock_print = threading.Lock()          
+        self.lock_print = threading.Lock()
         # Asigna al socket una direccion y puerto.
         self.s.bind((addr, port))
         """
@@ -38,24 +39,28 @@ class Server(object):
     def multiclient(self):
 
         while True:
-            conn,addr = self.s.accept() 
+            conn, addr = self.s.accept()
             self.lock_print.acquire()
-            print(threading.current_thread().name + " Connected by {0}".format(addr))
+            print("%s Connected by %s" % (threading.current_thread().name,
+                                          addr))
+
             self.lock_print.release()
 
-            point_to_point_conn = c.Connection(conn, self.directory,self.lock_print)
+            point_to_point_conn = c.Connection(
+                conn,
+                self.directory,
+                self.lock_print
+            )
             point_to_point_conn.handle()
-
 
     def serve(self):
         """
         Loop principal del servidor. Se acepta una conexión a la vez
         y se espera a que concluya antes de seguir.
-        """     
-        for x in range(MAX_QUEUE):          
-            thread = threading.Thread(target= self.multiclient)
+        """
+        for x in range(MAX_QUEUE):
+            thread = threading.Thread(target=self.multiclient)
             thread.start()
-
 
 
 def main():

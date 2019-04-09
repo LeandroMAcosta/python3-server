@@ -10,6 +10,7 @@ from os import listdir
 from os.path import isfile, join, getsize
 import threading
 
+
 class Connection(object):
     """
     Conexión punto a punto entre el servidor y un cliente.
@@ -17,11 +18,11 @@ class Connection(object):
     que termina la conexión.
     """
 
-    def __init__(self, socket, directory,lock_print):
+    def __init__(self, socket, directory, lock_print):
         self.s = socket            # Socket del cliente.
         self.d = './' + directory  # Directiorio actual.
-        self.buffer = ''           # Cola de comandos. 
-        self.active = True         # Nos dice si el cliente termino la conexión.
+        self.buffer = ''           # Cola de comandos.
+        self.active = True         # Nos dice si el cliente termino la conexión
         self.data = ''             # Datos que se van a enviar al cliente.
         self.lock_print = lock_print
 
@@ -29,7 +30,7 @@ class Connection(object):
         # Envia el mensaje al cliente.
         # FALTA: Hacerlo bien.
         self.data = ''
-        self.s.send(message.encode('ascii'))
+        self.s.sendall(message.encode('ascii'))
 
     def _valid_filename(self, filename):
         return set(filename) <= VALID_CHARS and isfile(join(self.d, filename))
@@ -66,7 +67,7 @@ class Connection(object):
 
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
-        
+
         path = join(self.d, filename)
         file = open(path, 'rb')
         file.seek(offset)
@@ -102,7 +103,7 @@ class Connection(object):
     def parser_command(self, command):
         '''
         Esta funcion llama al metodo correspondiente al comando solicitado.
-        
+
         Ademas:
             1. Chequea que no haya un caracter \n fuera de un terminador de
                pedido.
@@ -113,7 +114,7 @@ class Connection(object):
 
         # Normalizamos el comando.
         command, args = self._normalize_command(command)
-        
+
         self.lock_print.acquire()
         print(threading.current_thread().name + " Request: " + command)
         self.lock_print.release()
@@ -149,12 +150,12 @@ class Connection(object):
             return response
         else:
             return ''
-        
+
     def handle(self):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
             command = self._read_buffer()
-            if len(command) != 0: 
+            if len(command) != 0:
                 status = self.parser_command(command)
                 # Desconectamos si ocurrio un error fatal.
                 if fatal_status(status):
