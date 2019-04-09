@@ -9,6 +9,7 @@ from base64 import b64encode
 from os import listdir
 from os.path import isfile, join, getsize
 
+
 class Connection(object):
     """
     Conexión punto a punto entre el servidor y un cliente.
@@ -19,8 +20,8 @@ class Connection(object):
     def __init__(self, socket, directory):
         self.s = socket            # Socket del cliente.
         self.d = './' + directory  # Directiorio actual.
-        self.buffer = ''           # Cola de comandos. 
-        self.active = True         # Nos dice si el cliente termino la conexión.
+        self.buffer = ''           # Cola de comandos.
+        self.active = True         # Nos dice si el cliente termino la conexión
         self.data = ''             # Datos que se van a enviar al cliente.
 
     def send(self, message):
@@ -64,7 +65,7 @@ class Connection(object):
 
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
-        
+
         path = join(self.d, filename)
         file = open(path, 'rb')
         file.seek(offset)
@@ -100,7 +101,7 @@ class Connection(object):
     def parser_command(self, command):
         '''
         Esta funcion llama al metodo correspondiente al comando solicitado.
-        
+
         Ademas:
             1. Chequea que no haya un caracter \n fuera de un terminador de
                pedido.
@@ -145,12 +146,12 @@ class Connection(object):
             return response
         else:
             return ''
-        
+
     def handle(self):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
             command = self._read_buffer()
-            if len(command) != 0: 
+            if len(command) != 0:
                 status = self.parser_command(command)
                 # Desconectamos si ocurrio un error fatal.
                 if fatal_status(status):
