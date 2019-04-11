@@ -102,6 +102,46 @@ Sel.register() como lo dice el nombre registra el socket para que sea monitoread
 para eventos en los que estamos interesados. La información es recivida cuando la llamada a `sel.select()` termina.
 
 ### Threads   
+``` python
+    def multiclient(self,conn,addr):
+        self.lock_print.acquire()
+        print("%s Connected by %s" % (
+            threading.current_thread().name,
+            addr)
+        )
+
+        self.lock_print.release()
+
+        point_to_point_conn = c.Connection(
+            conn,
+            self.directory,
+            self.lock_print
+        )
+        point_to_point_conn.handle()
+        point_to_point_conn.s.close()
+
+    def serve(self):
+        while True:
+            conn, addr = self.s.accept()
+            thread = threading.Thread(target=self.multiclient,args =(conn,addr))
+            # .daemon hace que el thread se muera una vez que termina su tarea
+            thread.daemon = True
+            thread.start()
+```
+
+La primera diferencia que notamos con el servidor de un único cliente, es que una vez que haceptamos la conexión 
+en vez de crear una instancia de la clase **Connection** creamos un hilo utilizando la llamada a la función `threading.Thread()`. El "target" es la función que se va a llamar una vez que se inicie el hilo (esto se hace utilizando el método **.start()**) y "args" son los argumentos que toma dicha función.
+
+> Daemon es una variable booleana que pertece a la clase "Thread" e indica si el hilo es daemon o no. Esta variable se tiene que modificar antes de que se llame a .start(), si no se levanta la excepción "Runtime Error". El valor inicial se hereda del Hilo que lo crea. Cundo la variable está en True significa que el hilo va a ser eliminado una vez que termina de hacer su tarea, en nuestro caso atender a un cliente.
+
+Por otro lado utilizamos un "lock" (Candado) con el nombre print_lock que lo utilizamos para imprimir en la terminal y que dos o más hilos no traten de hacerlo al mismo tiempo, para eso utilizamos los siguientes métodos:
+
+> Acquire(): Se queda esperando hasta que el lock no esté bloqueado y después lo bloquea.
+
+> Release(): libera el lock previamente adquirido.
+
+Para más información sobre [Lock](https://docs.python.org/2/library/threading.html#lock-objects)
+
 
 
 ## Bibliografía
