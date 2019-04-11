@@ -67,7 +67,7 @@ socket usand `close()`.
 
 -------------------------------
 Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
-> Las aplicaciones son responsables de verificar que toda la información haya sido enviada ; si sólo se envió una oarta , la aplicación tiene que enviar la información que resta.
+> Las aplicaciones son responsables de verificar que toda la información haya sido enviada ; si sólo se envió una parte , la aplicación tiene que enviar la información que resta.
 
 Podemos evitar este inconveniente utilizando la función `sendall()`
 > A diferencia de send(), este metodo continua enviando la información hasta que se envia todo u ocurre un error. En caso de exito se devuelve cero.
