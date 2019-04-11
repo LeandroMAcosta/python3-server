@@ -67,7 +67,7 @@ socket usand `close()`.
 
 -------------------------------
 Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
-> Las aplicaciones son responsables de verificar que toda la información haya sido enviada ; si sólo se envió una oarta , la aplicación tiene que enviar la información que resta.
+> Las aplicaciones son responsables de verificar que toda la información haya sido enviada ; si sólo se envió una parte , la aplicación tiene que enviar la información que resta.
 
 Podemos evitar este inconveniente utilizando la función `sendall()`
 > A diferencia de send(), este metodo continua enviando la información hasta que se envia todo u ocurre un error. En caso de exito se devuelve cero.
@@ -77,8 +77,6 @@ Podemos evitar este inconveniente utilizando la función `sendall()`
 Volviendo a como funciona un servidor cabe destacar que el método descripto sólo funciona para un cliente. Entonces ¿Cómo hacemos para manejar multiples clientes al mismo tiempo?. Existen varias formas de implementar un servidor multicliente:
 
 ###Selectors 
-
-Va a ser una breve descripción de como funciona porque no es el método que optamos nosotros para realizar un servidor multicliente. 
 
 Si usamos la **systemcall** `select()` podemos fijarnos que socket's tiene la E/S para leer/escribir, dependiendo del caso. Para ello se puede utilizar la librería *Selectors*. 
 ``` python
@@ -102,6 +100,47 @@ Sel.register() como lo dice el nombre registra el socket para que sea monitoread
 para eventos en los que estamos interesados. La información es recivida cuando la llamada a `sel.select()` termina.
 
 ### Threads   
+``` python
+    def multiclient(self,conn,addr):
+        self.lock_print.acquire()
+        print("%s Connected by %s" % (
+            threading.current_thread().name,
+            addr)
+        )
+
+        self.lock_print.release()
+
+        point_to_point_conn = c.Connection(
+            conn,
+            self.directory,
+            self.lock_print
+        )
+        point_to_point_conn.handle()
+        point_to_point_conn.s.close()
+
+    def serve(self):
+        while True:
+            conn, addr = self.s.accept()
+            thread = threading.Thread(target=self.multiclient,args =(conn,addr))
+            # .daemon hace que el thread se muera una vez que termina su tarea
+            thread.daemon = True
+            thread.start()
+```
+
+La primera diferencia que notamos con el servidor de un único cliente, es que una vez que haceptamos la conexión 
+en vez de crear una instancia de la clase **Connection** creamos un hilo utilizando la llamada a la función `threading.Thread()`. El "target" es la función que se va a llamar una vez que se inicie el hilo (esto se hace utilizando el método **.start()**) y "args" son los argumentos que toma dicha función.
+
+> Daemon es una variable booleana que pertece a la clase "Thread" e indica si el hilo es daemon o no. Esta variable se tiene que modificar antes de que se llame a .start(), si no se levanta la excepción "Runtime Error". El valor inicial se hereda del Hilo que lo crea. Cundo la variable está en True significa que el hilo va a ser eliminado una vez que termina de hacer su tarea, en nuestro caso atender a un cliente.
+
+Por otro lado utilizamos un "lock" (Candado) con el nombre print_lock para imprimir en la terminal y que dos o más hilos no traten de hacerlo al mismo tiempo, para eso utilizamos los siguientes métodos:
+
+> Acquire(): Se queda esperando hasta que el lock no esté bloqueado y después lo bloquea.
+
+> Release(): libera el lock previamente adquirido.
+
+Para más información sobre [Lock](https://docs.python.org/2/library/threading.html#lock-objects)
+
+
 
 
 ## Bibliografía
