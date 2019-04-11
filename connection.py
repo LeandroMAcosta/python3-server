@@ -28,7 +28,6 @@ class Connection(object):
 
     def send(self, message):
         # Envia el mensaje al cliente.
-        # FALTA: Hacerlo bien.
         self.data = ''
         self.s.sendall(message.encode('ascii'))
 
@@ -69,12 +68,18 @@ class Connection(object):
             return FILE_NOT_FOUND
 
         path = join(self.d, filename)
-        file = open(path, 'rb')
-        file.seek(offset)
-        data = file.read(size)
-        data = b64encode(data).decode('ascii')
-        self.data = data
-        return CODE_OK
+        try:
+            file = open(path, 'rb')
+            file.seek(offset)
+            data = file.read(size)
+            data = b64encode(data).decode('ascii')
+            self.data = data
+            return CODE_OK
+        except PermissionError:
+            self.lock_print.acquire()
+            print("%s Permission denied" % threading.current_thread().name)
+            self.lock_print.release()
+            return FILE_NOT_FOUND
 
     def get_metadata(self, filename):
         if not self._valid_filename(filename):
@@ -164,5 +169,3 @@ class Connection(object):
                 message = self._build_message(status)
                 # Enviamos el mensaje al cliente.
                 self.send(message)
-
-        self.s.close()
