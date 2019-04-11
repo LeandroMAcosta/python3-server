@@ -139,8 +139,11 @@ class Connection(object):
             if len(data) == 0:
                 self.active = False
             else:
-                data = data.decode("ascii")
-                self.buffer += data
+                try:
+                    data = data.decode("ascii")
+                    self.buffer += data
+                except UnicodeDecodeError:
+                    return ''
         if EOL in self.buffer:
             response, self.buffer = self.buffer.split(EOL, 1)
             return response
@@ -151,6 +154,7 @@ class Connection(object):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
             command = self._read_buffer()
+            print(command)
             if len(command) != 0:
                 status = self.parser_command(command)
                 # Desconectamos si ocurrio un error fatal.
