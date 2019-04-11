@@ -39,7 +39,7 @@ la conexión con el servidor e iniciar lo que se conoce como *three-way handshak
 es nada más que una forma de asegurarse que el cliente se pueda comunicar con el servidor
 en la network y vice-versa.
 
-Para comunicarse entre ellos tanto el servido como el cliente utilizan las funciones.
+Para comunicarse entre ellos tanto el servidor como el cliente utilizan las funciones.
     
     send()
     recv()
@@ -127,10 +127,10 @@ para eventos en los que estamos interesados. La información es recivida cuando 
             thread.start()
 ```
 
-La primera diferencia que notamos con el servidor de un único cliente, es que una vez que haceptamos la conexión 
+La primera diferencia que notamos con el servidor de un único cliente, es que una vez que aceptamos la conexión 
 en vez de crear una instancia de la clase **Connection** creamos un hilo utilizando la llamada a la función `threading.Thread()`. El "target" es la función que se va a llamar una vez que se inicie el hilo (esto se hace utilizando el método **.start()**) y "args" son los argumentos que toma dicha función.
 
-> Daemon es una variable booleana que pertece a la clase "Thread" e indica si el hilo es daemon o no. Esta variable se tiene que modificar antes de que se llame a .start(), si no se levanta la excepción "Runtime Error". El valor inicial se hereda del Hilo que lo crea. Cundo la variable está en True significa que el hilo va a ser eliminado una vez que termina de hacer su tarea, en nuestro caso atender a un cliente.
+> Daemon es una variable booleana que pertece a la clase "Thread" e indica si el hilo es daemon o no. Esta variable se tiene que modificar antes de que se llame a .start(), si no se levanta la excepción "Runtime Error". El valor inicial se hereda del Hilo que lo crea. Cuando la variable está en True significa que el hilo va a ser eliminado una vez que termina de hacer su tarea, en nuestro caso atender a un cliente.
 
 Por otro lado utilizamos un "lock" (Candado) con el nombre print_lock para imprimir en la terminal y que dos o más hilos no traten de hacerlo al mismo tiempo, para eso utilizamos los siguientes métodos:
 

@@ -154,7 +154,6 @@ class Connection(object):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
             command = self._read_buffer()
-            print(command)
             if len(command) != 0:
                 status = self.parser_command(command)
                 # Desconectamos si ocurrio un error fatal.
