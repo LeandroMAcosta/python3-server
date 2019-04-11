@@ -18,19 +18,24 @@ class Connection(object):
 
     def __init__(self, socket, directory):
         self.s = socket            # Socket del cliente.
-        self.d = './' + directory  # Directiorio actual.
+        self.dir = './' + directory  # Directiorio actual.
         self.buffer = ''           # Cola de comandos. 
         self.active = True         # Nos dice si el cliente termino la conexión.
         self.data = ''             # Datos que se van a enviar al cliente.
+        self.commands = {
+            'quit': self.quit,
+            'get_slice': self.get_slice,
+            'get_file_listing': self.get_file_listing,
+            'get_metadata': self.get_metadata
+        }
 
     def send(self, message):
         # Envia el mensaje al cliente.
-        # FALTA: Hacerlo bien.
         self.data = ''
-        self.s.send(message.encode('ascii'))
+        self.s.sendall(message.encode('ascii'))
 
     def _valid_filename(self, filename):
-        return set(filename) <= VALID_CHARS and isfile(join(self.d, filename))
+        return set(filename) <= VALID_CHARS and isfile(join(self.dir, filename))
 
     def _build_message(self, status):
         """
@@ -46,26 +51,19 @@ class Connection(object):
 
     def get_file_listing(self):
         try:
-            files = [f for f in listdir(self.d) if isfile(join(self.d, f))]
+            files = [f for f in listdir(self.dir) if isfile(join(self.dir, f))]
             self.data = EOL.join(files) + EOL
             return CODE_OK
-        except Exception:
+        except FileNotFoundError:
             return FILE_NOT_FOUND
 
     def get_slice(self, filename, offset, size):
-        try:
-            offset, size = int(offset), int(size)
-        except ValueError:
-            '''
-            Levantar esta excepcion significa que llegaron argumentos
-            invalidos y parser_command tiene que manejalo.
-            '''
-            raise
+        offset, size = int(offset), int(size)
 
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
-        
-        path = join(self.d, filename)
+
+        path = join(self.dir, filename)
         file = open(path, 'rb')
         file.seek(offset)
         data = file.read(size)
@@ -77,7 +75,7 @@ class Connection(object):
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
 
-        size = getsize(join(self.d, filename))
+        size = getsize(join(self.dir, filename))
         self.data = str(size)
         return CODE_OK
 
@@ -115,18 +113,11 @@ class Connection(object):
         print("Request: " + command)
 
         try:
-            if command == 'get_file_listing':
-                return self.get_file_listing(*args)
-            elif command == 'get_metadata':
-                return self.get_metadata(*args)
-            elif command == 'get_slice':
-                return self.get_slice(*args)
-            elif command == 'quit':
-                return self.quit(*args)
-            else:
-                return INVALID_COMMAND
+            return self.commands[command](*args)
         except (TypeError, ValueError):
             return INVALID_ARGUMENTS
+        except KeyError:
+            return INVALID_COMMAND
 
     def _read_buffer(self):
         while EOL not in self.buffer and self.active:
@@ -145,12 +136,12 @@ class Connection(object):
             return response
         else:
             return ''
-        
+
     def handle(self):
         # Atiende eventos de la conexión hasta que termina.
         while self.active:
             command = self._read_buffer()
-            if len(command) != 0: 
+            if len(command) != 0:
                 status = self.parser_command(command)
                 # Desconectamos si ocurrio un error fatal.
                 if fatal_status(status):
