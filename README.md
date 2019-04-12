@@ -5,7 +5,7 @@
     
     2.1 Métodos
     
-    2.2 Manejo de Errores
+    2.2  Rompiendo el Servidor
     
     2.3 Errores
 
@@ -50,7 +50,9 @@ socket usand `close()`.
 
 ## Clase Connection 
 -----------
+
 ### Métodos
+
 #### Handle(self):
 
 Maneja los eventos del cliente hasta que la conexion termine, para ello realizamos una llamada 
@@ -82,22 +84,34 @@ una tupla , el primero elemento de dicha dupla es el comando  y el segundo es un
 
 #### Build_message(self,status):
 
-Por último nos encargamos de construir el mensaje como lo dice el método
-"""
-        Estos mensajes estan construidos por el codigo de respuesta,
-        seguida de un espacio, seguido de un mensaje de error y
-        datos del server si es que los hay.
-        """
+Por último nos encargamos de construir el mensaje como lo dice el método. El mensaje se compone de dos partes,
+la primera contiene el estado ,el mensaje de error correspondiente al estado y por último el EOL("\n\r"). Después de esto
+se concatena al mensaje el buffer, siempre y cuando este no esté vacío. 
 
--------------------------------
+
+## Rompiendo el Servidor
+---------------------------
+
+### Test_big_file()
+
 Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
 > Las aplicaciones son responsables de verificar que toda la información haya sido enviada ; si sólo se envió una parte , la aplicación tiene que enviar la información que resta.
 
 Podemos evitar este inconveniente utilizando la función `sendall()`
 > A diferencia de send(), este metodo continua enviando la información hasta que se envia todo u ocurre un error. En caso de exito se devuelve cero.
-------------------------------
 
-## Servidor Multicliente
+### Permisos en un Archivo 
+
+Si en la carpeta que utiliza el servidor se encuentra algún archivo que requiere permisos de super usuario para poder 
+leerlo/modificarlo, cuando el cliente solicite ese archivo la llamada a la función `open()` va a levantar la excepción
+*Permission denied* que ocurre cuando un usuario no tiene los permisos necesarios. En caso de que no sea maneja 
+el servidor va a terminar de forma abrupta.
+
+### UTF-8
+
+
+## Servidor Multiclient
+------------------------
 Volviendo a como funciona un servidor cabe destacar que el método descripto sólo funciona para un cliente. Entonces ¿Cómo hacemos para manejar multiples clientes al mismo tiempo?. Existen varias formas de implementar un servidor multicliente:
 
 ###Selectors 

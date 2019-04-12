@@ -65,15 +65,16 @@ class Connection(object):
 
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
-
-        path = join(self.d, filename)
-        file = open(path, 'rb')
-        file.seek(offset)
-        data = file.read(size)
-        data = b64encode(data).decode('ascii')
-        self.data = data
-        return CODE_OK
-
+        try:
+            path = join(self.d, filename)
+            file = open(path, 'rb')
+            file.seek(offset)
+            data = file.read(size)
+            data = b64encode(data).decode('ascii')
+            self.data = data
+            return CODE_OK
+        except PermissionError:
+            return FILE_NOT_FOUND
     def get_metadata(self, filename):
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
