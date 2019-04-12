@@ -6,8 +6,6 @@
     2.1 Métodos
     
     2.2  Rompiendo el Servidor
-    
-    2.3 Errores
 
 3. Servidor Multicliente
     
