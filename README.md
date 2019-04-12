@@ -1,9 +1,9 @@
 # Aplicación Servidor
 # Indice
 1. ¿Cómo funciona un servidor?
-2. Proyecto
+2. Clase Connection
     
-    2.1 Funciones
+    2.1 Métodos
     
     2.2 Excepciones
     
@@ -48,22 +48,39 @@ Por último una vez que el cliente no necesita comunicarse más con el servidor 
 un mensaje para indicarle que no va enviar más mensajes y cierra su respectivo 
 socket usand `close()`.
 
-## Proyecto
+## Clase Connection 
 -----------
-### Funciones
-
+### Métodos
+<!--
+![handle](diagrams/handle.png)
+![handle](diagrams/normalizeCmd.png)
+![handle](diagrams/parser.png)
+![handle](diagrams/readBuffer.png)
+-->
 #### Handle(self):
 
-![handle](diagrams/handle.png)
-#### Normalize_command(self, command):
+Maneja los eventos del cliente hasta que la conexion termine, para ello realizamos una llamada 
+al método `self._read_buffer()` y después al método `self.parser_command()`, si ocurre algún error 
+fatal durante el proceso cerramos la conexión con el cliene, de lo contrario construimos el mensaje y
+lo enviamos al destinatario. 
 
-![handle](diagrams/normalizeCmd.png)
-#### Parser_command(self, command, args=None):
-
-![handle](diagrams/parser.png)
 #### Read_buffer(self):
 
-![handle](diagrams/readBuffer.png)
+Este método se encarga de recibir los mensajes que  envia el cliente al servidor e ir guardandolos en 
+buffer a medida que van llegando para después ser procesados. Una vez que termina de recibir todo el método 
+devuelve el primer comando que se encuentre en el buffer, en caso de no contener nada retorna un string vacío.
+Recibe,guarda y lee comandos en un buffer.
+
+#### Parser_command(self, command):
+
+Toma como argumentos un comando y se encarga de llamar al método correspondiente. Antes de poder hacer eso se 
+asegura que no haya errores como por ejemplo que no haya '\n' en el comando. Una vez que se corrobora que no hay un error 
+de este tipo se llama al método `self.normalize_command()` (que más a delante explicaremos que hace). Finalmente si el comando 
+solictado no existe se devuelve un error (*INVALID_COMMAND*).
+
+#### Normalize_command(self, command):
+
+
 
 -------------------------------
 Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
@@ -122,7 +139,6 @@ para eventos en los que estamos interesados. La información es recivida cuando 
         while True:
             conn, addr = self.s.accept()
             thread = threading.Thread(target=self.multiclient,args =(conn,addr))
-            # .daemon hace que el thread se muera una vez que termina su tarea
             thread.daemon = True
             thread.start()
 ```
@@ -151,6 +167,8 @@ Para más información sobre [Lock](https://docs.python.org/2/library/threading.
 3. [Libreria Selectors](https://docs.python.org/3/library/selectors.html)
 
 4. [Libreria Thread](htthttps://docs.python.org/2/library/thread.html)
+
+5. [Libreria Threading](https://docs.python.org/3/library/threading.html)
 
 ## Integrantes del Grupo
 - Gonzalo Gigena
