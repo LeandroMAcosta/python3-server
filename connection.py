@@ -26,7 +26,6 @@ class Connection(object):
 
     def send(self, message):
         # Envia el mensaje al cliente.
-        # FALTA: Hacerlo bien.
         self.data = ''
         self.s.sendall(message.encode('ascii'))
 
@@ -54,14 +53,7 @@ class Connection(object):
             return FILE_NOT_FOUND
 
     def get_slice(self, filename, offset, size):
-        try:
-            offset, size = int(offset), int(size)
-        except ValueError:
-            '''
-            Levantar esta excepcion significa que llegaron argumentos
-            invalidos y parser_command tiene que manejalo.
-            '''
-            raise
+        offset, size = int(offset), int(size)
 
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
@@ -75,6 +67,7 @@ class Connection(object):
             return CODE_OK
         except PermissionError:
             return FILE_NOT_FOUND
+
     def get_metadata(self, filename):
         if not self._valid_filename(filename):
             return FILE_NOT_FOUND
