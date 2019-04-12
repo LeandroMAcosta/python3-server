@@ -5,7 +5,7 @@
     
     2.1 Métodos
     
-    2.2 Excepciones
+    2.2 Manejo de Errores
     
     2.3 Errores
 
@@ -61,7 +61,7 @@ lo enviamos al destinatario.
 #### Read_buffer(self):
 
 Este método se encarga de recibir los mensajes que  envia el cliente al servidor e ir guardandolos en 
-buffer a medida que van llegando para después ser procesados. Una vez que termina de recibir todo el método 
+buffer (*self.data*) a medida que van llegando para después ser procesados. Una vez que termina de recibir todo el método 
 devuelve el primer comando que se encuentre en el buffer, en caso de no contener nada retorna un string vacío.
 Recibe,guarda y lee comandos en un buffer.
 
@@ -79,6 +79,15 @@ una tupla , el primero elemento de dicha dupla es el comando  y el segundo es un
 
 > Un ejemple es llamar a self._normalize_command('get_metadata home.txt') que  
 > da como resultado ('get_metadata', ['home.txt']).
+
+#### Build_message(self,status):
+
+Por último nos encargamos de construir el mensaje como lo dice el método
+"""
+        Estos mensajes estan construidos por el codigo de respuesta,
+        seguida de un espacio, seguido de un mensaje de error y
+        datos del server si es que los hay.
+        """
 
 -------------------------------
 Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
@@ -152,7 +161,7 @@ Por otro lado utilizamos un "lock" (Candado) con el nombre print_lock para impri
 
 > Release(): libera el lock previamente adquirido.
 
-Para más información sobre [Lock](https://docs.python.org/2/library/threading.html#lock-objects)
+Para más información sobre [Lock.](https://docs.python.org/2/library/threading.html#lock-objects)
 
 
 
