@@ -79,7 +79,7 @@ solictado no existe se devuelve un error (*INVALID_COMMAND*).
 Este método no hace nada más que separar el comando de una forma para que después sea más fácil de manejar. Devuelve 
 una tupla , el primero elemento de dicha dupla es el comando  y el segundo es una lista con los argumentos si es que los hay.
 
-> Un ejemple es llamar a self._normalize_command('get_metadata home.txt') que  
+> Un ejemplo es llamar a self._normalize_command('get_metadata home.txt') que  
 > da como resultado ('get_metadata', ['home.txt']).
 
 #### Build_message(self,status):
@@ -109,6 +109,12 @@ el servidor va a terminar de forma abrupta.
 
 ### UTF-8
 
+UTF-8 es un formato de codificación de caracteres Unicode que utiliza símbolos de longitud variable, por lo tanto 
+si tratamos de decodificar un caracter de UTF-8 con ASCII vamos a tener un error porque no lo va a poder hacer. Entonces si de 
+alguna forma podeoms enviarle un caracter codificado en UTF-8 a nuestro servidor ¿Qué pasa?. No es muy dificíl de adivinar, se rompe. Sin embargo no es tan fácil como suena, ya que si tratamos de enviar cualquier caracter UTF-8 a traves de **client.py**
+se nos rompe el cliente cuando trata cifrar el caracter con el método `encode('ascii')`, pese a esto se puede lograr si desde 
+cualquier terminal nos conectamos al servidor usando el comando *telnet ip puerto* y le enviamos caracteres del tipo **ჶ**, 
+**ჳ** o **ც**. 
 
 ## Servidor Multiclient
 ------------------------
@@ -167,7 +173,7 @@ para eventos en los que estamos interesados. La información es recivida cuando 
 La primera diferencia que notamos con el servidor de un único cliente, es que una vez que aceptamos la conexión 
 en vez de crear una instancia de la clase **Connection** creamos un hilo utilizando la llamada a la función `threading.Thread()`. El "target" es la función que se va a llamar una vez que se inicie el hilo (esto se hace utilizando el método **.start()**) y "args" son los argumentos que toma dicha función.
 
-> Daemon es una variable booleana que pertece a la clase "Thread" e indica si el hilo es daemon o no. Esta variable se tiene que modificar antes de que se llame a .start(), si no se levanta la excepción "Runtime Error". El valor inicial se hereda del Hilo que lo crea. Cuando la variable está en True significa que el hilo va a ser eliminado una vez que termina de hacer su tarea, en nuestro caso atender a un cliente.
+> Daemon es una variable booleana que pertenece a la clase "Thread" e indica si el hilo es daemon o no. Esta variable se tiene que modificar antes de que se llame a .start(), si no se levanta la excepción "Runtime Error". El valor inicial se hereda del Hilo que lo crea. Cuando la variable está en True significa que el hilo va a ser eliminado una vez que termina de hacer su tarea, en nuestro caso atender a un cliente.
 
 Por otro lado utilizamos un "lock" (Candado) con el nombre print_lock para imprimir en la terminal y que dos o más hilos no traten de hacerlo al mismo tiempo, para eso utilizamos los siguientes métodos:
 

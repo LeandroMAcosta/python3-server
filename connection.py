@@ -28,7 +28,7 @@ class Connection(object):
         # Envia el mensaje al cliente.
         # FALTA: Hacerlo bien.
         self.data = ''
-        self.s.send(message.encode('ascii'))
+        self.s.sendall(message.encode('ascii'))
 
     def _valid_filename(self, filename):
         return set(filename) <= VALID_CHARS and isfile(join(self.d, filename))
