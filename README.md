@@ -51,12 +51,6 @@ socket usand `close()`.
 ## Clase Connection 
 -----------
 ### Métodos
-<!--
-![handle](diagrams/handle.png)
-![handle](diagrams/normalizeCmd.png)
-![handle](diagrams/parser.png)
-![handle](diagrams/readBuffer.png)
--->
 #### Handle(self):
 
 Maneja los eventos del cliente hasta que la conexion termine, para ello realizamos una llamada 
@@ -74,13 +68,17 @@ Recibe,guarda y lee comandos en un buffer.
 #### Parser_command(self, command):
 
 Toma como argumentos un comando y se encarga de llamar al método correspondiente. Antes de poder hacer eso se 
-asegura que no haya errores como por ejemplo que no haya '\n' en el comando. Una vez que se corrobora que no hay un error 
+asegura que no haya errores como por ejemplo que no haya **'\n'** en el comando. Una vez que se corrobora que no hay un error 
 de este tipo se llama al método `self.normalize_command()` (que más a delante explicaremos que hace). Finalmente si el comando 
 solictado no existe se devuelve un error (*INVALID_COMMAND*).
 
 #### Normalize_command(self, command):
 
+Este método no hace nada más que separar el comando de una forma para que después sea más fácil de manejar. Devuelve 
+una tupla , el primero elemento de dicha dupla es el comando  y el segundo es una lista con los argumentos si es que los hay.
 
+> Un ejemple es llamar a self._normalize_command('get_metadata home.txt') que  
+> da como resultado ('get_metadata', ['home.txt']).
 
 -------------------------------
 Cuando el cliente o el servidor usan la funcion `send()` pueden surgir complicaciones. ¿Cuál es el problema?. Muy simple send() devuelve la cantidad de bytes enviados, pero puede llegar a pasar que esa cantidad es menor al tamaño de la información que se quiere enviar.
